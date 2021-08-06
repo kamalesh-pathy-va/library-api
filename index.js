@@ -55,6 +55,23 @@ bookApi.get("\/c\/:category", (req, res) => {
 
 
 /*
+Route			/language
+Description		Get specific book based on Language
+Access			PUBLIC
+Parameters		lan
+Method			GET
+*/
+
+bookApi.get("\/language\/:lan", (req, res) => {
+	const getSpectificBook = database.books.filter((book) => book.language === req.params.lan);
+	if (getSpectificBook.length === 0)
+		return res.json({error: `No books found for the language ${req.params.lan}`});
+
+	return res.json({book: getSpectificBook});
+});
+
+
+/*
 Route			/author
 Description		Get all authors
 Access			PUBLIC
