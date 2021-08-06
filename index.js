@@ -85,6 +85,23 @@ bookApi.get("\/author", (req, res) => {
 
 
 /*
+Route			/author
+Description		Get all authors
+Access			PUBLIC
+Parameters		id
+Method			GET
+*/
+
+bookApi.get("\/author\/:id", (req, res) => {
+	const getSpectificAuthor = database.author.filter((author) => author.id === parseInt(req.params.id));
+	if (getSpectificAuthor.length === 0)
+		return res.json({error: `No author found for the ID of ${req.params.id}`});
+
+	return res.json({authors: getSpectificAuthor});
+});
+
+
+/*
 Route			/author/book
 Description		Get all author based on specific book
 Access			PUBLIC
