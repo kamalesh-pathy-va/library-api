@@ -1,0 +1,21 @@
+Requirements for our project
+
+We are a book management company
+
+BOOKS
+ISBN, title, pub date, lang, num page, author[], catogory[].
+
+AUTHORS
+id, name, books[]
+
+PUBLICATION
+id, name, book[]
+
+We have to desgin and code an API over this -
+
+BOOKS
+*To get all the books
+*To get specific book
+*To get a list of books based on catogory
+*To get a list of books based on languages
+
