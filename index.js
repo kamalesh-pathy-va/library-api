@@ -131,6 +131,41 @@ bookApi.get("\/publications", (req, res) => {
 	return res.json({publications: database.publications});
 });
 
+
+/*
+Route			/publications
+Description		Get specific publications based on id
+Access			PUBLIC
+Parameters		id
+Method			GET
+*/
+
+bookApi.get("\/publications\/:id", (req, res) => {
+	const getSpectificPublication = database.publications.filter((publication) => publication.id === parseInt(req.params.id));
+	if (getSpectificPublication.length === 0)
+		return res.json({error: `No publication found for the id of ${req.params.id}`});
+
+	return res.json({publications: getSpectificPublication});
+});
+
+
+/*
+Route			/publications/book
+Description		Get specific publications based on isbn
+Access			PUBLIC
+Parameters		isbn
+Method			GET
+*/
+
+bookApi.get("\/publications\/book\/:isbn", (req, res) => {
+	const getSpectificPublication = database.publications.filter((publication) => publication.books.includes(req.params.isbn));
+
+	if (getSpectificPublication.length === 0)
+		return res.json({error: `No publication found for the book of ${req.params.isbn}`});
+
+	return res.json({publications: getSpectificPublication});
+});
+
 bookApi.listen(3000, () => {
 	console.log("Server is up at 3000");
 });

@@ -26,5 +26,5 @@ AUTHORS
 
 PUBLICATIONS
 *To get all the publications - DONE
-*To get a specific publication
+*To get a specific publication - DONE
 *To get a list of publications based on a book
