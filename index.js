@@ -1,9 +1,12 @@
 const express = require("express");
-const database = require("./database")
+var bodyParser = require("body-parser");
+
+const database = require("./database");
 
 const bookApi = express();
 
-bookApi.use(express.json());
+bookApi.use(bodyParser.urlencoded({extended: true}));
+bookApi.use(bodyParser.json());
 
 /*
 Route			/
@@ -164,6 +167,25 @@ bookApi.get("\/publications\/book\/:isbn", (req, res) => {
 		return res.json({error: `No publication found for the book of ${req.params.isbn}`});
 
 	return res.json({publications: getSpectificPublication});
+});
+
+
+bookApi.post("\/book\/new", (req, res) => {
+	const newBook = req.body;
+	database.books.push(newBook);
+	return res.json({updatedBooks: database.books});
+});
+
+bookApi.post("\/author\/new", (req, res) => {
+	const newAuthor = req.body;
+	database.author.push(newAuthor);
+	return res.json(database.author);
+});
+
+bookApi.post("\/publications\/new", (req, res) => {
+	const newPublication = req.body;
+	database.publications.push(newPublication);
+	return res.json(database.publications);
 });
 
 bookApi.listen(3000, () => {
