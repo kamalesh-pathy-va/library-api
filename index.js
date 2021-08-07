@@ -172,19 +172,37 @@ bookApi.get("\/publications\/book\/:isbn", (req, res) => {
 
 bookApi.post("\/book\/new", (req, res) => {
 	const newBook = req.body;
-	database.books.push(newBook);
+	const existingBooks = database.books.filter((book) => book.ISBN === newBook.ISBN);
+	if (existingBooks.length === 0)
+		database.books.push(newBook);
+	else {
+		const indexOfBook = database.books.indexOf(existingBooks[0]);
+		database.books.splice(indexOfBook, 1, newBook);
+	}
 	return res.json({updatedBooks: database.books});
 });
 
 bookApi.post("\/author\/new", (req, res) => {
 	const newAuthor = req.body;
-	database.author.push(newAuthor);
+	const existingAuthor = database.author.filter((author) => author.id === parseInt(newAuthor.id));
+	if (existingAuthor.length === 0)
+		database.author.push(newAuthor);
+	else {
+		const indexOfAuthor = database.author.indexOf(existingAuthor[0]);
+		database.author.splice(indexOfAuthor, 1, newAuthor);
+	}
 	return res.json(database.author);
 });
 
 bookApi.post("\/publications\/new", (req, res) => {
 	const newPublication = req.body;
-	database.publications.push(newPublication);
+	const existingPublication = database.publications.filter((publication) => publication.id === newPublication.id);
+	if (existingPublication.length === 0)
+		database.publications.push(newPublication);
+	else {
+		const indexOfPublication = database.publications.indexOf(existingPublication[0]);
+		database.publications.splice(indexOfPublication, 1, newPublication);
+	}
 	return res.json(database.publications);
 });
 
