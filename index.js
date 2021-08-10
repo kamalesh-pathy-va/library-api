@@ -4,7 +4,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 var bodyParser = require("body-parser");
 
-const database = require("./database");
+const database = require("./database/database");
+
+// Model
+const BookModel = require("./database/book");
+const AuthorModel = require("./database/author");
+const PublicationModel = require("./database/publication");
 
 const bookApi = express();
 
@@ -27,8 +32,9 @@ Parameters		NONE
 Method			GET
 */
 
-bookApi.get("\/", (req,res) => {
-	return res.json({books: database.books});
+bookApi.get("\/", async (req,res) => {
+	const getAllBooks = await BookModel.find();
+	return res.json(getAllBooks);
 });
 
 
@@ -40,9 +46,10 @@ Parameters		isbn
 Method			GET
 */
 
-bookApi.get("\/is\/:isbn", (req,res) => {
-	const getSpectificBook = database.books.filter((book) => book.ISBN === req.params.isbn);
-	if (getSpectificBook.length === 0) {
+bookApi.get("\/is\/:isbn", async (req,res) => {
+	const getSpectificBook = await BookModel.findOne({ISBN: req.params.isbn});
+	// If no book is found mongoDB returns 'null' so we are using '!' so that the condition becomes true
+	if (!getSpectificBook) {
 		return res.json({error: `No book found for the ISBN of '${req.params.isbn}'`});
 	}
 
@@ -58,10 +65,11 @@ Parameters		category
 Method			GET
 */
 
-bookApi.get("\/c\/:category", (req, res) => {
-	const getSpectificBook = database.books.filter((book) => book.category.includes(req.params.category));
-	if (getSpectificBook.length === 0) {
-		return res.json({error: `No books found for the category ${req.params.category}`});
+bookApi.get("\/c\/:category", async (req, res) => {
+	const getSpectificBook = await BookModel.findOne({category: req.params.category});
+
+	if (!getSpectificBook) {
+		return res.json({error: `No book found for the category of '${req.params.category}'`});
 	}
 
 	return res.json({book: getSpectificBook});
@@ -76,9 +84,9 @@ Parameters		lan
 Method			GET
 */
 
-bookApi.get("\/language\/:lan", (req, res) => {
-	const getSpectificBook = database.books.filter((book) => book.language === req.params.lan);
-	if (getSpectificBook.length === 0)
+bookApi.get("\/language\/:lan", async (req, res) => {
+	const getSpectificBook = await BookModel.findOne({language: req.params.lan});
+	if (!getSpectificBook)
 		return res.json({error: `No books found for the language ${req.params.lan}`});
 
 	return res.json({book: getSpectificBook});
@@ -93,8 +101,9 @@ Parameters		NONE
 Method			GET
 */
 
-bookApi.get("\/author", (req, res) => {
-	return res.json({authors: database.author});
+bookApi.get("\/author", async (req, res) => {
+	const getAllAuthors = await AuthorModel.find();
+	return res.json(getAllAuthors);
 });
 
 
@@ -106,12 +115,12 @@ Parameters		id
 Method			GET
 */
 
-bookApi.get("\/author\/:id", (req, res) => {
-	const getSpectificAuthor = database.author.filter((author) => author.id === parseInt(req.params.id));
-	if (getSpectificAuthor.length === 0)
+bookApi.get("\/author\/:id", async (req, res) => {
+	const getSpecificAuthor = await AuthorModel.findOne({id: parseInt(req.params.id)});
+	if (!getSpecificAuthor)
 		return res.json({error: `No author found for the ID of ${req.params.id}`});
 
-	return res.json({authors: getSpectificAuthor});
+	return res.json({authors: getSpecificAuthor});
 });
 
 
@@ -123,13 +132,12 @@ Parameters		isbn
 Method			GET
 */
 
-bookApi.get("\/author\/book\/:isbn", (req, res) => {
-	const getSpectificAuthor = database.author.filter((author) => author.books.includes(req.params.isbn));
-
-	if (getSpectificAuthor.length === 0)
+bookApi.get("\/author\/book\/:isbn", async (req, res) => {
+	const getSpecificAuthor = await AuthorModel.findOne({books: req.params.isbn});
+	if (!getSpecificAuthor)
 		return res.json({error: `No author found for the book of ${req.params.isbn}`});
 
-	return res.json({authors: getSpectificAuthor});
+	return res.json({authors: getSpecificAuthor});
 });
 
 
@@ -141,8 +149,9 @@ Parameters		NONE
 Method			GET
 */
 
-bookApi.get("\/publications", (req, res) => {
-	return res.json({publications: database.publications});
+bookApi.get("\/publications", async (req, res) => {
+	const getAllPublications = await PublicationModel.find();
+	return res.json(getAllPublications);
 });
 
 
@@ -154,12 +163,13 @@ Parameters		id
 Method			GET
 */
 
-bookApi.get("\/publications\/:id", (req, res) => {
-	const getSpectificPublication = database.publications.filter((publication) => publication.id === parseInt(req.params.id));
-	if (getSpectificPublication.length === 0)
+bookApi.get("\/publications\/:id", async (req, res) => {
+	const getSpecificPublication = await PublicationModel.findOne({id: parseInt(req.params.id)});
+	// const getSpectificPublication = database.publications.filter((publication) => publication.id === parseInt(req.params.id));
+	if (!getSpecificPublication)
 		return res.json({error: `No publication found for the id of ${req.params.id}`});
 
-	return res.json({publications: getSpectificPublication});
+	return res.json({publications: getSpecificPublication});
 });
 
 
@@ -171,50 +181,64 @@ Parameters		isbn
 Method			GET
 */
 
-bookApi.get("\/publications\/book\/:isbn", (req, res) => {
-	const getSpectificPublication = database.publications.filter((publication) => publication.books.includes(req.params.isbn));
+bookApi.get("\/publications\/book\/:isbn", async (req, res) => {
+	const getSpecificPublication = await PublicationModel.findOne({books: req.params.isbn});
 
-	if (getSpectificPublication.length === 0)
+	if (!getSpecificPublication)
 		return res.json({error: `No publication found for the book of ${req.params.isbn}`});
 
-	return res.json({publications: getSpectificPublication});
+	return res.json({publications: getSpecificPublication});
 });
 
 
-bookApi.post("\/book\/new", (req, res) => {
-	const newBook = req.body;
-	const existingBooks = database.books.filter((book) => book.ISBN === newBook.ISBN);
-	if (existingBooks.length === 0)
-		database.books.push(newBook);
-	else {
-		const indexOfBook = database.books.indexOf(existingBooks[0]);
-		database.books.splice(indexOfBook, 1, newBook);
-	}
-	return res.json({updatedBooks: database.books});
+bookApi.post("\/book\/new", async (req, res) => {
+	const {newBook} = req.body;
+	const addNewBook = BookModel.create(newBook);
+	return res.json({
+		books: addNewBook,
+		message: "Book was Added"
+	});
+	// const existingBooks = database.books.filter((book) => book.ISBN === newBook.ISBN);
+	// if (existingBooks.length === 0)
+	// 	database.books.push(newBook);
+	// else {
+	// 	const indexOfBook = database.books.indexOf(existingBooks[0]);
+	// 	database.books.splice(indexOfBook, 1, newBook);
+	// }
 });
 
-bookApi.post("\/author\/new", (req, res) => {
-	const newAuthor = req.body;
-	const existingAuthor = database.author.filter((author) => author.id === parseInt(newAuthor.id));
-	if (existingAuthor.length === 0)
-		database.author.push(newAuthor);
-	else {
-		const indexOfAuthor = database.author.indexOf(existingAuthor[0]);
-		database.author.splice(indexOfAuthor, 1, newAuthor);
-	}
-	return res.json(database.author);
+bookApi.post("\/author\/new", async (req, res) => {
+	const {newAuthor} = req.body;
+	const addNewAuthor = AuthorModel.create(newAuthor);
+	return res.json({
+		authors: addNewAuthor,
+		message: "Author was Added"
+	});
+	// const existingAuthor = database.author.filter((author) => author.id === parseInt(newAuthor.id));
+	// if (existingAuthor.length === 0)
+	// 	database.author.push(newAuthor);
+	// else {
+	// 	const indexOfAuthor = database.author.indexOf(existingAuthor[0]);
+	// 	database.author.splice(indexOfAuthor, 1, newAuthor);
+	// }
+	// return res.json(database.author);
 });
 
-bookApi.post("\/publications\/new", (req, res) => {
-	const newPublication = req.body;
-	const existingPublication = database.publications.filter((publication) => publication.id === newPublication.id);
-	if (existingPublication.length === 0)
-		database.publications.push(newPublication);
-	else {
-		const indexOfPublication = database.publications.indexOf(existingPublication[0]);
-		database.publications.splice(indexOfPublication, 1, newPublication);
-	}
-	return res.json(database.publications);
+bookApi.post("\/publications\/new", async (req, res) => {
+	const {newPublication} = req.body;
+	const addNewPublication = PublicationModel.create(newPublication);
+	return res.json({
+		publications: addNewPublication,
+		message: "Publication was Added"
+	});
+	// const existingPublication = database.publications.filter((publication) => publication.id === newPublication.id);
+	// if (existingPublication.length === 0)
+	// 	database.publications.push(newPublication);
+	// else {
+	// 	const indexOfPublication = database.publications.indexOf(existingPublication[0]);
+	// 	database.publications.splice(indexOfPublication, 1, newPublication);
+	// }
+	// return res.json(database.publications);
 });
 
 
