@@ -28,12 +28,12 @@ const publications = [
 	{
 		id: 1,
 		name: "writeX",
-		books: ["12345Book", "imaginary54321"]
+		books: ["12345Book, imaginary54321"]
 	},
 	{
 		id: 2,
 		name: "readableS",
-		books: ["secretBook", "imaginary54321"]
+		books: []
 	}
 ];
 

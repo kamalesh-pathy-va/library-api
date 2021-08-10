@@ -1,4 +1,7 @@
+require("dotenv").config();
+
 const express = require("express");
+const mongoose = require("mongoose");
 var bodyParser = require("body-parser");
 
 const database = require("./database");
@@ -7,6 +10,14 @@ const bookApi = express();
 
 bookApi.use(bodyParser.urlencoded({extended: true}));
 bookApi.use(bodyParser.json());
+
+mongoose.connect(process.env.MONGO_URL, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true,
+	useFindAndModify: false,
+	useCreateIndex: true
+})
+.then(() => console.log("DB Connected"));
 
 /*
 Route			/
@@ -204,6 +215,64 @@ bookApi.post("\/publications\/new", (req, res) => {
 		database.publications.splice(indexOfPublication, 1, newPublication);
 	}
 	return res.json(database.publications);
+});
+
+
+bookApi.put("\/publications\/update\/book\/:isbn", (req, res) => {
+	// Update publication database
+	database.publications.forEach((publication) => {
+		if (publication.id === req.body.pubId)
+			return publication.books.push(req.params.isbn);
+	});
+
+	database.books.forEach((book) => {
+		if (book.ISBN === req.params.isbn) {
+			book.publications = req.body.pubId;
+			return;
+		}
+	});
+
+	return res.json({
+		books: database.books,
+		publications: database.publications,
+		message: "Updated successfully"
+	});
+});
+
+
+bookApi.delete("\/book\/delete\/:isbn", (req, res) => {
+	// Whichever book that does not match with the isbn, just send it to updatedBookDatabase array and rest will be filtered out
+	const updatedBookDatabase = database.books.filter((book) => book.ISBN !== req.params.isbn);
+	database.books = updatedBookDatabase;
+
+	return res.json({books: database.books});
+});
+
+
+bookApi.delete("\/book\/delete\/author\/:isbn\/:authorId", (req, res) => {
+	// Update the book database
+	database.books.forEach((book) => {
+		if (book.ISBN === req.params.isbn) {
+			const newAuthorList = book.author.filter((eachAuthor) => eachAuthor !== parseInt(req.params.authorId));
+			book.author = newAuthorList;
+			return;
+		}
+	});
+
+	// Update the author database
+	database.author.forEach((eachAuthor) => {
+		if(eachAuthor.id === parseInt(req.params.authorId)) {
+			const newBookList = eachAuthor.books.filter((book) => book !== req.params.isbn);
+			eachAuthor.books = newBookList;
+			return;
+		}
+	});
+
+	return res.json({
+		books: database.books,
+		author: database.author,
+		message: "Author was deleted"
+	});
 });
 
 bookApi.listen(3000, () => {

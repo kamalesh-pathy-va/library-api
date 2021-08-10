@@ -1,2 +1,4 @@
 node_modules
 server.log
+.env
+package-lock.json
