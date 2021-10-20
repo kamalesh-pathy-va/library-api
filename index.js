@@ -263,15 +263,85 @@ bookApi.put("\/publications\/update\/book\/:isbn", (req, res) => {
 	});
 });
 
-
-bookApi.delete("\/book\/delete\/:isbn", (req, res) => {
-	// Whichever book that does not match with the isbn, just send it to updatedBookDatabase array and rest will be filtered out
-	const updatedBookDatabase = database.books.filter((book) => book.ISBN !== req.params.isbn);
-	database.books = updatedBookDatabase;
-
-	return res.json({books: database.books});
+bookApi.put("\/book\/update\/:isbn", async (req, res) => {
+	const updatedBookDatabase = await BookModel.findOneAndUpdate(
+		{
+			ISBN: req.params.isbn
+		},
+		{
+			title: req.body.bookTitle
+		},
+		{
+			new: true
+		});
+	return res.json({
+		books: updatedBookDatabase
+	});
 });
 
+
+bookApi.put("\/book\/author\/update\/:isbn", async (req, res) => {
+	// updatedBookDatabase
+	const updatedBook = await BookModel.findOneAndUpdate(
+		{
+			ISBN: req.params.isbn
+		},
+		{
+			$addToSet: {
+				author: req.body.newAuthor
+			}
+		},
+		{
+			new: true
+		});
+
+	// updateAuthorDatabase
+	const updateAuthor = await AuthorModel.findOneAndUpdate(
+		{
+			id: req.body.newAuthor
+		},
+		{
+			$addToSet: {
+				books:req.params.isbn
+			}
+		},
+		{
+			new: true
+		});
+
+	return res.json({
+		books: updatedBook,
+		author: updateAuthor,
+		message: "New Author was added"
+	});
+});
+
+
+bookApi.delete("\/book\/delete\/:isbn", async (req, res) => {
+	// Whichever book that does not match with the isbn, just send it to updatedBookDatabase array and rest will be filtered out
+	// const updatedBookDatabase = database.books.filter((book) => book.ISBN !== req.params.isbn);
+	// database.books = updatedBookDatabase;
+
+	// return res.json({books: database.books});
+	const updatedBookDatabase = await BookModel.findOneAndDelete( // updatedBookDatabase will have the deleted book
+		{
+			ISBN: req.params.isbn
+		});
+	return res.json({
+		books: updatedBookDatabase
+	});
+});
+
+
+bookApi.delete("\/author\/delete\/:isbn", async (req, res) =>{
+	const updatedBookDatabase = await BookModel.findOneAndDelete(
+		{
+			ISBN: req.params.isbn
+		},
+		{
+			
+		});
+});
 
 bookApi.delete("\/book\/delete\/author\/:isbn\/:authorId", (req, res) => {
 	// Update the book database
